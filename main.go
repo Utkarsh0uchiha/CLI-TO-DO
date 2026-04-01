@@ -115,6 +115,9 @@ func getAllTasks() []Task {
 
 	for i := 1; i < n; i++ {
 		row := records[i]
+		if len(row) < 5 {
+			continue
+		}
 		// converting string to Int
 		ID, err := strconv.Atoi(row[0])
 		if err != nil {
@@ -130,6 +133,7 @@ func getAllTasks() []Task {
 		}
 		// append the struct in the slice
 		List = append(List, task)
+
 	}
 
 	return List
@@ -189,7 +193,7 @@ func main() {
 	} else {
 		command := args[1]
 		tm := time.Now()
-		List := getAllTasks()
+
 		switch command {
 		case "add":
 			if len(args) < 3 {
@@ -202,6 +206,7 @@ func main() {
 			saveTask(task)
 			fmt.Printf("Adding task: %s\n", work)
 		case "list":
+			List := getAllTasks()
 			fmt.Println("Listing tasks")
 
 			fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
@@ -210,6 +215,7 @@ func main() {
 				fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
 			}
 		case "complete":
+
 			if len(args) < 3 {
 				fmt.Println("Please provide the ID")
 				return
@@ -221,7 +227,7 @@ func main() {
 				panic(err)
 			}
 			if complete(intId, tm) {
-
+				List := getAllTasks()
 				for _, row := range List {
 					if row.Id == intId {
 						fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
@@ -231,6 +237,7 @@ func main() {
 			} else {
 				fmt.Println("Task not found")
 			}
+
 		default:
 			fmt.Println("Unknown Command")
 		}
