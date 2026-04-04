@@ -56,8 +56,10 @@ func saveTask(task Task) {
 	file, err := os.OpenFile("todo.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	// checking error in opening file
 	if err != nil {
+		fmt.Println("Error! file don't exist")
 		panic(err)
 	}
+
 	// closing file
 	defer file.Close()
 
@@ -94,8 +96,10 @@ func getAllTasks() []Task {
 	file, err := os.Open("todo.csv")
 	// handling file opening error
 	if err != nil {
+		fmt.Println("Error! file don't exist")
 		panic(err)
 	}
+
 	// defer file closing
 	defer file.Close()
 	// creating a reader
@@ -104,6 +108,7 @@ func getAllTasks() []Task {
 	records, err := reader.ReadAll()
 	// handling file read error
 	if err != nil {
+		fmt.Println("Error! Can't read file")
 		panic(err)
 	}
 	// creating a struct to convert from CSV
@@ -139,9 +144,10 @@ func getAllTasks() []Task {
 	return List
 }
 
-func complete(id int, tm time.Time) bool {
+func completeTask(id int, tm time.Time) bool {
 	file, err := os.Open("todo.csv")
 	if err != nil {
+		fmt.Println("Error! file don't exist")
 		panic(err)
 	}
 
@@ -151,6 +157,7 @@ func complete(id int, tm time.Time) bool {
 	records, err := reader.ReadAll()
 
 	if err != nil {
+		fmt.Println("Error! Can't read file")
 		panic(err)
 	}
 
@@ -185,11 +192,62 @@ func complete(id int, tm time.Time) bool {
 	return found
 }
 
+func deleteTask(id int) error {
+	file, err := os.Open("todo.csv")
+	if err != nil {
+
+		return err
+	}
+
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	records, err := reader.ReadAll()
+
+	if err != nil {
+		return err
+	}
+
+	var updateRecords [][]string
+
+	updateRecords = append(updateRecords, records[0])
+	for i := 1; i < len(records); i++ {
+		row := records[i]
+		ID, err := strconv.Atoi(row[0])
+		if err != nil {
+			return err
+		}
+
+		if ID != id {
+			updateRecords = append(updateRecords, row)
+		}
+	}
+	editFile, err := os.Create("todo.csv")
+
+	if err != nil {
+		return err
+	}
+
+	defer editFile.Close()
+
+	writer := csv.NewWriter(editFile)
+	defer writer.Flush()
+
+	err = writer.WriteAll(updateRecords)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
 func main() {
 	args := os.Args
 
 	if len(args) < 2 {
-		fmt.Printf("Usage:\n add 'task name' \n list \n")
+		fmt.Printf("Usage:\n add 'task name' \n complete 'task id' \n delete 'task id' \n list \n")
 	} else {
 		command := args[1]
 		tm := time.Now()
@@ -226,7 +284,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			if complete(intId, tm) {
+			if completeTask(intId, tm) {
 				List := getAllTasks()
 				for _, row := range List {
 					if row.Id == intId {
@@ -237,7 +295,23 @@ func main() {
 			} else {
 				fmt.Println("Task not found")
 			}
+		case "delete":
+			if len(args) < 3 {
+				fmt.Println("Please Provide an ID")
+				return
+			}
+			id := args[2]
+			intId, err := strconv.Atoi(id)
+			if err != nil {
+				fmt.Println("Error: ", err)
+			}
+			err = deleteTask(intId)
 
+			if err != nil {
+				fmt.Println("Error: ", err)
+			} else {
+				fmt.Println("Record Deleted Successfully!")
+			}
 		default:
 			fmt.Println("Unknown Command")
 		}
