@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -243,6 +244,17 @@ func deleteTask(id int) error {
 	return nil
 
 }
+
+func getTasksByStatus(status string, List []Task) []Task {
+	filter := []Task{}
+	for _, row := range List {
+		if row.Status == status {
+			filter = append(filter, row)
+		}
+	}
+
+	return filter
+}
 func main() {
 	args := os.Args
 
@@ -265,12 +277,52 @@ func main() {
 			fmt.Printf("Adding task: %s\n", work)
 		case "list":
 			List := getAllTasks()
-			fmt.Println("Listing tasks")
+			if len(List) > 0 {
 
-			fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
-			for _, row := range List {
+				if len(args) < 3 {
+					fmt.Println("Listing tasks")
+					fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
+					for _, row := range List {
+						fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
+					}
+					return
+				}
 
-				fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
+				filter := args[2]
+				filter = strings.ToLower(filter)
+				var FilterdList []Task
+				switch filter {
+				case "completed":
+					FilterdList = getTasksByStatus(filter, List)
+					if len(FilterdList) > 0 {
+						fmt.Println("Listing Completed tasks")
+					} else {
+						fmt.Println("No completed tasks!")
+						return
+					}
+
+				case "pending":
+					FilterdList = getTasksByStatus(filter, List)
+
+					if len(FilterdList) > 0 {
+						fmt.Println("Listing Pending tasks")
+					} else {
+						fmt.Println("No pending tasks!")
+						return
+					}
+				default:
+					fmt.Println("Invalid filter. Use: completed / pending")
+					return
+				}
+				fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
+				for _, row := range FilterdList {
+					fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
+				}
+				return
+
+			} else {
+				fmt.Println("No tasks for you!")
+				return
 			}
 		case "complete":
 
