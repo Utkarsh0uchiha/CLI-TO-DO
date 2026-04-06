@@ -255,6 +255,14 @@ func getTasksByStatus(status string, List []Task) []Task {
 
 	return filter
 }
+
+func printTasks(List []Task) {
+
+	fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
+	for _, row := range List {
+		fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
+	}
+}
 func main() {
 	args := os.Args
 
@@ -281,10 +289,7 @@ func main() {
 
 				if len(args) < 3 {
 					fmt.Println("Listing tasks")
-					fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
-					for _, row := range List {
-						fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
-					}
+					printTasks(List)
 					return
 				}
 
@@ -314,10 +319,7 @@ func main() {
 					fmt.Println("Invalid filter. Use: completed / pending")
 					return
 				}
-				fmt.Printf("%-5s %-12s %-10s %-20s %-20s\n", "ID", "Name", "Status", "CreatedAt", "CompletedAt")
-				for _, row := range FilterdList {
-					fmt.Printf("%-5d %-12s %-10s %-20s %-20s\n", row.Id, row.Name, row.Status, row.CreatedAt, row.CompletedAt)
-				}
+				printTasks(FilterdList)
 				return
 
 			} else {
